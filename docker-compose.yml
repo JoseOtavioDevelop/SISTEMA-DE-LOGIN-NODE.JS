@@ -1,0 +1,31 @@
+services:
+  db:
+    image: mysql:8
+    container_name: finly-db0000
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "3309:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finly-backend0000
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "${PORT}:3000"
+    depends_on:
+      - db
+    volumes:
+      - ".:/usr/app"
+    command: ["npm", "run", "dev"]
+
+
+volumes:
+  db_data:
