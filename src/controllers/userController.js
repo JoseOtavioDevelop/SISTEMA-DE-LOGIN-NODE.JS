@@ -1,5 +1,8 @@
 import usersModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const getAllUsersController = async (_, response) => {
   try {
@@ -103,16 +106,46 @@ const loginUsersController = async (request, response) => {
       });
     }
 
+    const tokenUser = jwt.sign(
+      { id: user.user_id, nome: user.nome_completo },
+      process.env.CHAVE_SECRET,
+      {
+        expiresIn: "1d",
+      }
+    );
+
     response.status(200).json({
       erro: false,
       message: "Login realizado com sucesso",
       user: {
         id: user.user_id,
+        tokenUser,
       },
     });
   } catch (error) {
     response.status(500).json({
       message: "Erro ao fazer login do usuário",
+      erro: error.message,
+    });
+  }
+};
+
+const authenticateController = async (request, response) => {
+  try {
+    const user = await usersModel.routeProtectUsers(request.user.id);
+    const filteredUsers = user.map((user) => ({
+      id: user.user_id,
+      nome_completo: user.nome_completo,
+    }));
+
+    response.status(200).json({
+      erro: false,
+      message: "autenticado",
+      filteredUsers,
+    });
+  } catch (error) {
+    response.status(500).json({
+      message: "não autenticado",
       erro: error.message,
     });
   }
@@ -124,4 +157,5 @@ export default {
   deleteUsersController,
   updateUsersController,
   loginUsersController,
+  authenticateController,
 };

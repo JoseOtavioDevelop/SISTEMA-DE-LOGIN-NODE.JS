@@ -76,10 +76,22 @@ const loginUsers = async (user) => {
   try {
     const [loginUser] = await database.execute(queryLoginUser, [email]);
     return loginUser;
-} catch (error) {
+  } catch (error) {
     console.error("Erro ao fazer login do usuário:", error);
     throw error;
-} 
+  }
+};
+
+const routeProtectUsers = async (user_id) => {
+  const query = `SELECT * FROM usersBD WHERE user_id = ? LIMIT 1`;
+
+  try {
+    const [routeProtec] = await database.execute(query, [user_id]);
+    return routeProtec;
+  } catch (error) {
+    console.error("Usúario não existe", error);
+    throw error;
+  }
 };
 
 export default {
@@ -88,4 +100,5 @@ export default {
   deleteUsers,
   updateUsers,
   loginUsers,
+  routeProtectUsers,
 };
